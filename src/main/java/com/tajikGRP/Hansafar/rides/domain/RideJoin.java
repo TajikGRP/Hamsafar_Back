@@ -80,4 +80,24 @@ public class RideJoin extends BaseEntity {
     public LocalDateTime getJoinedAt() {
         return getCreatedAt();
     }
+
+    public void approve() {
+        if (this.status != RideJoinStatus.PENDING) {
+            throw new IllegalStateException("Only pending reservations can be approved.");
+        }
+
+        this.status = RideJoinStatus.APPROVED;
+    }
+
+    public void reject() {
+        if (this.status != RideJoinStatus.PENDING) {
+            throw new IllegalStateException("Only pending reservations can be rejected.");
+        }
+
+        this.status = RideJoinStatus.REJECTED;
+    }
+
+    public boolean isApproved() {
+        return this.status == RideJoinStatus.APPROVED;
+    }
 }

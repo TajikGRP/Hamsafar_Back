@@ -1,8 +1,9 @@
 package com.tajikGRP.Hansafar.rides.domain;
 
 public enum RideJoinStatus {
-    JOINED,
-    CANCELLED,
+    PENDING,
+    APPROVED,
+    REJECTED,
     COMPLETED,
     NO_SHOW
 }

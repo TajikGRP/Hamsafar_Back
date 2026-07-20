@@ -101,4 +101,16 @@ public class RideSchedule extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private RideScheduleStatus status;
+
+    public boolean hasDeparted() {
+        return !meetingAt.isAfter(LocalDateTime.now());
+    }
+
+    public boolean isJoinClosed() {
+        if (joinDeadlineAt == null) {
+            return hasDeparted();
+        }
+
+        return !joinDeadlineAt.isAfter(LocalDateTime.now());
+    }
 }
