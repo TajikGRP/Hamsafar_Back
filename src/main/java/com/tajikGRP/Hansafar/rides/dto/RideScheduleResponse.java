@@ -1,5 +1,6 @@
 package com.tajikGRP.Hansafar.rides.dto;
 
+import com.tajikGRP.Hansafar.drivers.dto.DriverSummaryResponse;
 import com.tajikGRP.Hansafar.rides.domain.FareType;
 import com.tajikGRP.Hansafar.rides.domain.RideScheduleStatus;
 
@@ -8,13 +9,7 @@ import java.time.LocalDateTime;
 public record RideScheduleResponse(
         Long scheduleId,
 
-        Long driverId,
-        String driverName,
-        String driverPhone,
-
-        String vehicleType,
-        String manufacturer,
-        String modelName,
+        DriverSummaryResponse driver,
 
         String title,
         LocalDateTime meetingAt,

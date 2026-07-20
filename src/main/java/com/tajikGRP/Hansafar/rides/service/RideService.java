@@ -1,6 +1,7 @@
 package com.tajikGRP.Hansafar.rides.service;
 
 import com.tajikGRP.Hansafar.drivers.domain.DriverProfile;
+import com.tajikGRP.Hansafar.drivers.dto.DriverSummaryResponse;
 import com.tajikGRP.Hansafar.drivers.repository.DriverProfileRepository;
 import com.tajikGRP.Hansafar.rides.domain.FareType;
 import com.tajikGRP.Hansafar.rides.domain.RideJoin;
@@ -15,6 +16,7 @@ import com.tajikGRP.Hansafar.rides.repository.RideJoinRepository;
 import com.tajikGRP.Hansafar.rides.repository.RideScheduleRepository;
 import com.tajikGRP.Hansafar.users.domain.UserRole;
 import com.tajikGRP.Hansafar.users.domain.Users;
+import com.tajikGRP.Hansafar.users.dto.UserSummaryResponse;
 import com.tajikGRP.Hansafar.users.repository.UsersRepository;
 import com.tajikGRP.Hansafar.vehicles.domain.Vehicle;
 import com.tajikGRP.Hansafar.vehicles.repository.VehicleRepository;
@@ -50,20 +52,28 @@ public class RideService {
                 );
 
         if (driver.getUser().getRole() != UserRole.DRIVER) {
-            throw new IllegalStateException("Only driver accounts can create schedules.");
+            throw new IllegalStateException(
+                    "Only driver accounts can create schedules."
+            );
         }
 
         Vehicle vehicle = vehicleRepository.findByDriverId(driverId)
                 .orElseThrow(() ->
-                        new IllegalStateException("No registered vehicle was found.")
+                        new IllegalStateException(
+                                "No registered vehicle was found."
+                        )
                 );
 
         if (!Boolean.TRUE.equals(vehicle.getActive())) {
-            throw new IllegalStateException("Only active vehicles can be used.");
+            throw new IllegalStateException(
+                    "Only active vehicles can be used."
+            );
         }
 
         if (!request.meetingAt().isAfter(LocalDateTime.now())) {
-            throw new IllegalArgumentException("The departure time must be in the future.");
+            throw new IllegalArgumentException(
+                    "The departure time must be in the future."
+            );
         }
 
         if (request.joinDeadlineAt() != null) {
@@ -101,7 +111,8 @@ public class RideService {
                 .status(RideScheduleStatus.OPEN)
                 .build();
 
-        RideSchedule savedSchedule = rideScheduleRepository.save(schedule);
+        RideSchedule savedSchedule =
+                rideScheduleRepository.save(schedule);
 
         return toScheduleResponse(savedSchedule);
     }
@@ -111,7 +122,9 @@ public class RideService {
      */
     public List<RideScheduleResponse> getFutureSchedules() {
         return rideScheduleRepository
-                .findAllByMeetingAtAfterOrderByMeetingAtAsc(LocalDateTime.now())
+                .findAllByMeetingAtAfterOrderByMeetingAtAsc(
+                        LocalDateTime.now()
+                )
                 .stream()
                 .map(this::toScheduleResponse)
                 .toList();
@@ -120,9 +133,13 @@ public class RideService {
     /*
      * 기사가 자신이 만든 일정 조회
      */
-    public List<RideScheduleResponse> getDriverSchedules(Long driverId) {
+    public List<RideScheduleResponse> getDriverSchedules(
+            Long driverId
+    ) {
         if (!driverProfileRepository.existsById(driverId)) {
-            throw new IllegalArgumentException("Driver not found..");
+            throw new IllegalArgumentException(
+                    "Driver not found."
+            );
         }
 
         return rideScheduleRepository
@@ -141,40 +158,57 @@ public class RideService {
             Long userId,
             RideJoinCreateRequest request
     ) {
-        RideSchedule schedule = rideScheduleRepository.findById(scheduleId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Ride schedule not found.")
-                );
+        RideSchedule schedule =
+                rideScheduleRepository.findById(scheduleId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Ride schedule not found."
+                                )
+                        );
 
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("User not found.")
+                        new IllegalArgumentException(
+                                "User not found."
+                        )
                 );
 
         if (user.getRole() != UserRole.PASSENGER) {
-            throw new IllegalStateException("Only passenger accounts can make reservations.");
+            throw new IllegalStateException(
+                    "Only passenger accounts can make reservations."
+            );
         }
 
         if (schedule.hasDeparted()) {
-            throw new IllegalStateException("The departure time for this schedule has already passed.");
+            throw new IllegalStateException(
+                    "The departure time for this schedule has already passed."
+            );
         }
 
         if (schedule.isJoinClosed()) {
-            throw new IllegalStateException("Reservation requests for this schedule are closed.");
+            throw new IllegalStateException(
+                    "Reservation requests for this schedule are closed."
+            );
         }
 
         if (schedule.getStatus() != RideScheduleStatus.OPEN) {
-            throw new IllegalStateException("This schedule is not currently available for reservation.");
+            throw new IllegalStateException(
+                    "This schedule is not currently available for reservation."
+            );
         }
 
         long approvedPassengerCount =
                 getApprovedPassengerCount(scheduleId);
 
         long remainingPassengerCount =
-                schedule.getMaxPassengerCount() - approvedPassengerCount;
+                schedule.getMaxPassengerCount()
+                        - approvedPassengerCount;
 
-        if (request.passengerCount() > remainingPassengerCount) {
-            throw new IllegalStateException("The requested number of passengers exceeds the remaining seats.");
+        if (request.passengerCount()
+                > remainingPassengerCount) {
+            throw new IllegalStateException(
+                    "The requested number of passengers exceeds the remaining seats."
+            );
         }
 
         long totalFare = calculateTotalFare(
@@ -192,13 +226,18 @@ public class RideService {
                                 ? 0
                                 : request.largeLuggageCount()
                 )
-                .specialLuggageNote(request.specialLuggageNote())
-                .unitFareSnapshot(schedule.getFareAmount())
+                .specialLuggageNote(
+                        request.specialLuggageNote()
+                )
+                .unitFareSnapshot(
+                        schedule.getFareAmount()
+                )
                 .totalFare(totalFare)
                 .status(RideJoinStatus.PENDING)
                 .build();
 
-        RideJoin savedJoin = rideJoinRepository.save(rideJoin);
+        RideJoin savedJoin =
+                rideJoinRepository.save(rideJoin);
 
         return toJoinResponse(savedJoin);
     }
@@ -206,9 +245,13 @@ public class RideService {
     /*
      * 승객 자신의 예약 요청 목록
      */
-    public List<RideJoinResponse> getUserJoins(Long userId) {
+    public List<RideJoinResponse> getUserJoins(
+            Long userId
+    ) {
         if (!usersRepository.existsById(userId)) {
-            throw new IllegalArgumentException("User not found.");
+            throw new IllegalArgumentException(
+                    "User not found."
+            );
         }
 
         return rideJoinRepository
@@ -225,13 +268,16 @@ public class RideService {
             Long scheduleId,
             Long driverId
     ) {
-        RideSchedule schedule = getScheduleOwnedByDriver(
-                scheduleId,
-                driverId
-        );
+        RideSchedule schedule =
+                getScheduleOwnedByDriver(
+                        scheduleId,
+                        driverId
+                );
 
         return rideJoinRepository
-                .findAllByScheduleIdOrderByCreatedAtAsc(schedule.getId())
+                .findAllByScheduleIdOrderByCreatedAtAsc(
+                        schedule.getId()
+                )
                 .stream()
                 .map(this::toJoinResponse)
                 .toList();
@@ -245,14 +291,21 @@ public class RideService {
             Long joinId,
             Long driverId
     ) {
-        RideJoin rideJoin = rideJoinRepository.findById(joinId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Reservation request not found.")
-                );
+        RideJoin rideJoin =
+                rideJoinRepository.findById(joinId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Reservation request not found."
+                                )
+                        );
 
-        RideSchedule schedule = rideJoin.getSchedule();
+        RideSchedule schedule =
+                rideJoin.getSchedule();
 
-        validateScheduleOwner(schedule, driverId);
+        validateScheduleOwner(
+                schedule,
+                driverId
+        );
 
         if (schedule.hasDeparted()) {
             throw new IllegalStateException(
@@ -261,24 +314,32 @@ public class RideService {
         }
 
         long approvedPassengerCount =
-                getApprovedPassengerCount(schedule.getId());
+                getApprovedPassengerCount(
+                        schedule.getId()
+                );
 
         long remainingPassengerCount =
-                schedule.getMaxPassengerCount() - approvedPassengerCount;
+                schedule.getMaxPassengerCount()
+                        - approvedPassengerCount;
 
-        if (rideJoin.getPassengerCount() > remainingPassengerCount) {
+        if (rideJoin.getPassengerCount()
+                > remainingPassengerCount) {
             throw new IllegalStateException(
                     "This reservation cannot be approved because the requested number of passengers exceeds the remaining seats."
             );
         }
 
         long approvedLuggageCount =
-                getApprovedLuggageCount(schedule.getId());
+                getApprovedLuggageCount(
+                        schedule.getId()
+                );
 
         long remainingLuggageCount =
-                schedule.getMaxLuggageCount() - approvedLuggageCount;
+                schedule.getMaxLuggageCount()
+                        - approvedLuggageCount;
 
-        if (rideJoin.getLuggageCount() > remainingLuggageCount) {
+        if (rideJoin.getLuggageCount()
+                > remainingLuggageCount) {
             throw new IllegalStateException(
                     "The remaining luggage capacity of the vehicle has been exceeded."
             );
@@ -297,105 +358,147 @@ public class RideService {
             Long joinId,
             Long driverId
     ) {
-        RideJoin rideJoin = rideJoinRepository.findById(joinId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Reservation request not found.")
-                );
+        RideJoin rideJoin =
+                rideJoinRepository.findById(joinId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Reservation request not found."
+                                )
+                        );
 
-        validateScheduleOwner(rideJoin.getSchedule(), driverId);
+        validateScheduleOwner(
+                rideJoin.getSchedule(),
+                driverId
+        );
 
         rideJoin.reject();
 
         return toJoinResponse(rideJoin);
     }
 
+    /*
+     * 특정 일정이 해당 기사의 일정인지 확인
+     */
     private RideSchedule getScheduleOwnedByDriver(
             Long scheduleId,
             Long driverId
     ) {
-        RideSchedule schedule = rideScheduleRepository.findById(scheduleId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Ride schedule not found.")
-                );
+        RideSchedule schedule =
+                rideScheduleRepository.findById(scheduleId)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Ride schedule not found."
+                                )
+                        );
 
-        validateScheduleOwner(schedule, driverId);
+        validateScheduleOwner(
+                schedule,
+                driverId
+        );
 
         return schedule;
     }
 
+    /*
+     * 일정 소유 기사 확인
+     */
     private void validateScheduleOwner(
             RideSchedule schedule,
             Long driverId
     ) {
-        if (!schedule.getDriver().getId().equals(driverId)) {
+        if (!schedule.getDriver()
+                .getId()
+                .equals(driverId)) {
             throw new IllegalStateException(
                     "Only the driver assigned to this schedule can perform this action."
             );
         }
     }
 
-    private long getApprovedPassengerCount(Long scheduleId) {
+    /*
+     * 승인된 전체 승객 수 계산
+     */
+    private long getApprovedPassengerCount(
+            Long scheduleId
+    ) {
         Long result =
-                rideJoinRepository.sumPassengerCountByScheduleIdAndStatus(
-                        scheduleId,
-                        RideJoinStatus.APPROVED
-                );
+                rideJoinRepository
+                        .sumPassengerCountByScheduleIdAndStatus(
+                                scheduleId,
+                                RideJoinStatus.APPROVED
+                        );
 
         return result == null ? 0L : result;
     }
 
-    private long getApprovedLuggageCount(Long scheduleId) {
+    /*
+     * 승인된 전체 수하물 수 계산
+     */
+    private long getApprovedLuggageCount(
+            Long scheduleId
+    ) {
         Long result =
-                rideJoinRepository.sumLuggageCountByScheduleIdAndStatus(
-                        scheduleId,
-                        RideJoinStatus.APPROVED
-                );
+                rideJoinRepository
+                        .sumLuggageCountByScheduleIdAndStatus(
+                                scheduleId,
+                                RideJoinStatus.APPROVED
+                        );
 
         return result == null ? 0L : result;
     }
 
+    /*
+     * 요금 계산
+     */
     private long calculateTotalFare(
             RideSchedule schedule,
             short passengerCount
     ) {
-        if (schedule.getFareType() == FareType.FIXED_TOTAL) {
+        if (schedule.getFareType()
+                == FareType.FIXED_TOTAL) {
             return schedule.getFareAmount();
         }
 
-        return schedule.getFareAmount() * passengerCount;
+        return schedule.getFareAmount()
+                * passengerCount;
     }
 
+    /*
+     * RideSchedule 엔티티를 응답 DTO로 변환
+     */
     private RideScheduleResponse toScheduleResponse(
             RideSchedule schedule
     ) {
         long approvedPassengerCount =
-                getApprovedPassengerCount(schedule.getId());
+                getApprovedPassengerCount(
+                        schedule.getId()
+                );
 
         long approvedLuggageCount =
-                getApprovedLuggageCount(schedule.getId());
+                getApprovedLuggageCount(
+                        schedule.getId()
+                );
 
-        long remainingPassengerCount = Math.max(
-                0,
-                schedule.getMaxPassengerCount() - approvedPassengerCount
-        );
+        long remainingPassengerCount =
+                Math.max(
+                        0,
+                        schedule.getMaxPassengerCount()
+                                - approvedPassengerCount
+                );
 
-        long remainingLuggageCount = Math.max(
-                0,
-                schedule.getMaxLuggageCount() - approvedLuggageCount
-        );
-
-        Vehicle vehicle = schedule.getDriver().getVehicle();
+        long remainingLuggageCount =
+                Math.max(
+                        0,
+                        schedule.getMaxLuggageCount()
+                                - approvedLuggageCount
+                );
 
         return new RideScheduleResponse(
                 schedule.getId(),
 
-                schedule.getDriver().getId(),
-                schedule.getDriver().getUser().getName(),
-                schedule.getDriver().getDriverPhone(),
-
-                vehicle == null ? null : vehicle.getVehicleType(),
-                vehicle == null ? null : vehicle.getManufacturer(),
-                vehicle == null ? null : vehicle.getModelName(),
+                DriverSummaryResponse.from(
+                        schedule.getDriver()
+                ),
 
                 schedule.getTitle(),
                 schedule.getMeetingAt(),
@@ -422,17 +525,22 @@ public class RideService {
         );
     }
 
-    private RideJoinResponse toJoinResponse(RideJoin rideJoin) {
-        RideSchedule schedule = rideJoin.getSchedule();
-        Users user = rideJoin.getUser();
+    /*
+     * RideJoin 엔티티를 응답 DTO로 변환
+     */
+    private RideJoinResponse toJoinResponse(
+            RideJoin rideJoin
+    ) {
+        RideSchedule schedule =
+                rideJoin.getSchedule();
 
         return new RideJoinResponse(
                 rideJoin.getId(),
                 schedule.getId(),
 
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
+                UserSummaryResponse.from(
+                        rideJoin.getUser()
+                ),
 
                 rideJoin.getPassengerCount(),
                 rideJoin.getLuggageCount(),

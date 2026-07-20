@@ -44,4 +44,34 @@ public class Users extends BaseEntity {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    public void update(
+            String email,
+            String name
+    ) {
+        this.email = email;
+        this.name = name;
+    }
+
+    public void softDelete() {
+        if (this.deletedAt != null) {
+            throw new IllegalStateException("User has already been deleted.");
+        }
+
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public boolean isDeleted() {
+        return this.deletedAt != null;
+    }
+
+    public void updateDriverInfo(
+            String email,
+            String name,
+            String phone
+    ) {
+        this.email = email;
+        this.name = name;
+        this.phone = phone;
+    }
 }

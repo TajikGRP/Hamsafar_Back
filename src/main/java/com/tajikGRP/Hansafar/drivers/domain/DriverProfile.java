@@ -42,4 +42,12 @@ public class DriverProfile extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String introduction;
+
+    public void update(
+            String driverPhone,
+            String introduction
+    ) {
+        this.driverPhone = driverPhone;
+        this.introduction = introduction;
+    }
 }

@@ -67,4 +67,30 @@ public class Vehicle extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     private Boolean active;
 
+    public void update(
+            String vehicleType,
+            String manufacturer,
+            String modelName,
+            String licensePlate,
+            Short passengerCapacity,
+            Integer trunkVolumeLiter,
+            Short maxLuggageCount,
+            Short largeLuggageCapacity,
+            String vehicleImageUrl
+    ) {
+        this.vehicleType = vehicleType;
+        this.manufacturer = manufacturer;
+        this.modelName = modelName;
+        this.licensePlate = licensePlate;
+        this.passengerCapacity = passengerCapacity;
+        this.trunkVolumeLiter = trunkVolumeLiter;
+        this.maxLuggageCount = maxLuggageCount;
+        this.largeLuggageCapacity = largeLuggageCapacity;
+        this.vehicleImageUrl = vehicleImageUrl;
+    }
+
+    public void deactivate() {
+        this.active = false;
+    }
+
 }

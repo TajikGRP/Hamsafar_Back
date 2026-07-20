@@ -1,6 +1,7 @@
 package com.tajikGRP.Hansafar.rides.dto;
 
 import com.tajikGRP.Hansafar.rides.domain.RideJoinStatus;
+import com.tajikGRP.Hansafar.users.dto.UserSummaryResponse;
 
 import java.time.LocalDateTime;
 
@@ -8,9 +9,7 @@ public record RideJoinResponse(
         Long joinId,
         Long scheduleId,
 
-        Long userId,
-        String userName,
-        String userEmail,
+        UserSummaryResponse user,
 
         Short passengerCount,
         Short luggageCount,
