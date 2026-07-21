@@ -23,7 +23,7 @@ services:
       - key: FLYWAY_ENABLED
         value: "true"
       - key: SPRING_FLYWAY_BASELINE_ON_MIGRATE
-        value: "true"
+        value: "false"
       - key: SPRING_FLYWAY_BASELINE_VERSION
         value: "2"
       - key: DDL_AUTO
