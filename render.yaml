@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: hamsafar-back
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: main
+    autoDeployTrigger: commit
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_SCHEMA
+        value: app
+      - key: FLYWAY_ENABLED
+        value: "true"
+      - key: DDL_AUTO
+        value: validate
+      - key: DB_POOL_MAX_SIZE
+        value: "5"
+      - key: DB_POOL_MIN_IDLE
+        value: "0"
+      - key: TZ
+        value: Asia/Dushanbe
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:MaxRAMPercentage=60.0 -XX:InitialRAMPercentage=20.0 -Duser.timezone=Asia/Dushanbe

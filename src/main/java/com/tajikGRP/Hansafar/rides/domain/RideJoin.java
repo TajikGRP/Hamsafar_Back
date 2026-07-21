@@ -90,11 +90,42 @@ public class RideJoin extends BaseEntity {
     }
 
     public void reject() {
-        if (this.status != RideJoinStatus.PENDING) {
-            throw new IllegalStateException("Only pending reservations can be rejected.");
+        if (this.status != RideJoinStatus.PENDING
+                && this.status != RideJoinStatus.WAITLISTED) {
+            throw new IllegalStateException(
+                    "Only pending or waitlisted reservations can be rejected."
+            );
         }
 
         this.status = RideJoinStatus.REJECTED;
+    }
+
+    public void promoteFromWaitlist() {
+        if (this.status != RideJoinStatus.WAITLISTED) {
+            throw new IllegalStateException(
+                    "Only waitlisted reservations can be promoted."
+            );
+        }
+
+        this.status = RideJoinStatus.PENDING;
+    }
+
+    public void cancel() {
+        if (this.status != RideJoinStatus.PENDING
+                && this.status != RideJoinStatus.WAITLISTED
+                && this.status != RideJoinStatus.APPROVED) {
+            throw new IllegalStateException(
+                    "Only pending, waitlisted, or approved reservations can be cancelled."
+            );
+        }
+
+        this.status = RideJoinStatus.CANCELLED;
+        this.cancelledAt = LocalDateTime.now();
+    }
+
+    public boolean holdsCapacity() {
+        return this.status == RideJoinStatus.PENDING
+                || this.status == RideJoinStatus.APPROVED;
     }
 
     public boolean isApproved() {

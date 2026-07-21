@@ -20,6 +20,7 @@ public record RideJoinResponse(
         Long totalFare,
 
         RideJoinStatus status,
+        Long waitlistPosition,
         LocalDateTime joinedAt,
 
         String meetingAddress,

@@ -25,11 +25,15 @@ public record RideScheduleResponse(
 
         Short maxPassengerCount,
         Long approvedPassengerCount,
+        Long pendingPassengerCount,
         Long remainingPassengerCount,
 
         Short maxLuggageCount,
         Long approvedLuggageCount,
+        Long pendingLuggageCount,
         Long remainingLuggageCount,
+
+        Long waitlistedRequestCount,
 
         String description,
         RideScheduleStatus status
