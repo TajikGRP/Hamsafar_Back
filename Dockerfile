@@ -1,8 +1,8 @@
-
 # 빌드 환경
 FROM eclipse-temurin:21-jdk AS builder
 
 WORKDIR /app
+
 COPY . .
 
 RUN chmod +x ./gradlew && ./gradlew clean bootJar -x test --no-daemon
